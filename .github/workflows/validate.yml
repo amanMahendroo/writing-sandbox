@@ -1,0 +1,29 @@
+name: Validate Writing Repository
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Verify word counts and index generation
+      run: |
+        python3 scripts/format_prose.py exercises
+        python3 scripts/build_index.py
+
+    - name: Check for uncommitted changes
+      run: |
+        git diff --exit-code || (echo "Error: INDEX.md or word counts are out of sync. Please run your local scripts before pushing." && exit 1)
